@@ -1,15 +1,15 @@
 {
   "name": "Disable Raspberry Pi LEDs",
-  "version": "1.1",
+  "version": "1.0",
   "slug": "disable_leds",
-  "description": "An add-on to disable Raspberry Pi 4 LED lights",
-  "arch": ["aarch64", "armv7"],
+  "description": "An add-on to disable Raspberry Pi 4 LED lights dynamically without requiring a reboot.",
+  "arch": ["aarch64", "armv7", "amd64"],
   "startup": "system",
   "boot": "auto",
   "init": false,
-  "host_network": true,
+  "host_network": false,
   "privileged": ["SYS_ADMIN"],
   "options": {},
   "schema": {},
-  "image": null
+  "stage": "stable"
 }
