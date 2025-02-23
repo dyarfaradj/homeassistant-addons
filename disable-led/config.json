@@ -1,6 +1,6 @@
 {
   "name": "Disable Raspberry Pi LEDs",
-  "version": "1.0",
+  "version": "1.1",
   "slug": "disable_leds",
   "description": "An add-on to disable Raspberry Pi 4 LED lights",
   "arch": ["aarch64", "armv7"],
