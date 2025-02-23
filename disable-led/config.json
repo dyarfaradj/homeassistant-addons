@@ -11,5 +11,5 @@
   "privileged": ["SYS_ADMIN"],
   "options": {},
   "schema": {},
-  "image": "local/disable_leds"
+  "image": null
 }

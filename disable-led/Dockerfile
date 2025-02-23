@@ -1,10 +1,10 @@
-FROM ghcr.io/home-assistant/amd64-base:latest
+FROM ghcr.io/home-assistant/aarch64-base:latest
 
-# Set up the necessary dependencies
-RUN apk add --no-cache bash
+# Install Python
+RUN apk add --no-cache python3 py3-pip
 
-# Copy the script
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+# Copy the Python script
+COPY control_leds.py /control_leds.py
+RUN chmod +x /control_leds.py
 
-CMD [ "/run.sh" ]
+CMD ["python3", "/control_leds.py"]
