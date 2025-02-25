@@ -407,7 +407,7 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         }).encode())
 
 def main():
-    logging.info("Starting Raspberry Pi LED control add-on version 1.0.5")
+    logging.info("Starting Raspberry Pi LED control add-on version 1.0.6")
     # Find LED paths
     find_led_paths()
     

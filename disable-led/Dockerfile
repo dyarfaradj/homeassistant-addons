@@ -2,15 +2,8 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Set up add-on metadata
-LABEL \
-    org.opencontainers.image.title="Raspberry Pi LED Control" \
-    org.opencontainers.image.description="A Home Assistant add-on to control the Raspberry Pi LEDs" \
-    org.opencontainers.image.vendor="dyarfaradj" \
-    org.opencontainers.image.version="1.0.5"
-
-# Install Python
-RUN apk add --no-cache python3 util-linux
+# Install required packages
+RUN apk add --no-cache python3 util-linux shadow
 
 # Create directories 
 RUN mkdir -p /templates
@@ -20,7 +13,7 @@ COPY run.py /
 COPY run.sh /
 
 # Make scripts executable
-RUN chmod a+x /run.sh
+RUN chmod a+x /run.sh /run.py
 
 WORKDIR /
 CMD [ "/run.sh" ]
