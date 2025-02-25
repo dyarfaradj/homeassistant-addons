@@ -125,7 +125,7 @@ def load_html_template():
             with open('/templates/index.html', 'r') as f:
                 return f.read()
     except Exception as e:
-        logging.error(f"Error loading template: {str(e)}")
+        logging.error(f"Error loading template.")
     
     # Fallback to default template
     return """
@@ -407,7 +407,7 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         }).encode())
 
 def main():
-    logging.info("Starting Raspberry Pi LED control add-on version 1.0.7")
+    logging.info("Starting Raspberry Pi LED control add-on version 1.0.8")
     # Find LED paths
     find_led_paths()
     
