@@ -1,6 +1,6 @@
 {
   "name": "Raspberry Pi LED Control",
-  "version": "1.0",
+  "version": "1.0.1",
   "slug": "rpi_led_control",
   "description": "Control Raspberry Pi onboard LEDs with buttons",
   "arch": ["aarch64", "armv7", "armhf", "amd64"],
