@@ -1,22 +1,31 @@
 # Raspberry Pi LED Control
 
-Control your Raspberry Pi's onboard LEDs directly from Home Assistant.
+A Home Assistant add-on to control the Raspberry Pi's onboard LEDs through a simple web interface.
 
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports armv7 Architecture][armv7-shield]
-![Supports armhf Architecture][armhf-shield]
-![Supports amd64 Architecture][amd64-shield]
+## Features
 
-## About
+- Turn off and on the Power and Activity LEDs individually
+- Enable "Auto Mode" to automatically disable LEDs when add-on starts and restore when it stops
+- Simple web UI accessible through Home Assistant
 
-This add-on provides a simple way to control the Raspberry Pi's onboard LEDs through a user interface in Home Assistant. Features include:
+## Installation
 
-- Toggle power LED on/off
-- Toggle activity LED on/off
-- Auto mode (LEDs off while add-on runs, restored when stopped)
-- Simple and intuitive web interface
+1. Add this repository to your Home Assistant instance
+2. Install the "Raspberry Pi LED Control" add-on
+3. Start the add-on
+4. Open the web UI through the ingress link
 
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
+## Usage
+
+- **Auto Mode**: When enabled, LEDs turn off when the add-on starts and turn back on when it stops
+- **Power LED**: Toggle the red power LED (LED1)
+- **Activity LED**: Toggle the green activity LED (LED0)
+- **Enable/Disable All**: Quick buttons to control both LEDs simultaneously
+
+## Permissions
+
+This add-on requires privileged access to control the Raspberry Pi hardware. The required permissions are automatically configured in the `config.json` file.
+
+## Support
+
+If you encounter any issues or have questions, please open an issue in the GitHub repository.

@@ -4,20 +4,19 @@ FROM $BUILD_FROM
 
 # Set up add-on metadata
 LABEL \
-    org.opencontainers.image.title="Disable Raspberry Pi LEDs" \
-    org.opencontainers.image.description="A Home Assistant add-on to disable the Raspberry Pi LEDs dynamically" \
-    org.opencontainers.image.vendor="Your Name" \
-    org.opencontainers.image.authors="Your Name <your.email@example.com>" \
-    org.opencontainers.image.version="1.0"
+    org.opencontainers.image.title="Raspberry Pi LED Control" \
+    org.opencontainers.image.description="A Home Assistant add-on to control the Raspberry Pi LEDs" \
+    org.opencontainers.image.vendor="dyarfaradj" \
+    org.opencontainers.image.version="1.0.2"
 
-# Install Python (minimal runtime)
-RUN apk add --no-cache python3 py3-pip
+# Install Python
+RUN apk add --no-cache python3
 
-# Copy add-on files
-COPY control_leds.py /control_leds.py
+# Copy the Python script
+COPY run.py /run.py
 
 # Grant execution permissions
-RUN chmod +x /control_leds.py
+RUN chmod +x /run.py
 
-# Run the Python script when the add-on starts
-CMD ["python3", "/control_leds.py"]
+# Run the script when the add-on starts
+CMD ["python3", "/run.py"]

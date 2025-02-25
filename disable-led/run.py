@@ -1,9 +1,18 @@
+import sys
+import logging
 import os
 import signal
 import time
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    stream=sys.stdout
+)
 
 # LED paths
 LED_PWR = "/sys/class/leds/led1/brightness"
@@ -12,9 +21,10 @@ LED_ACT = "/sys/class/leds/led0/brightness"
 # Track LED state
 LED_STATE = {"power": False, "activity": False, "auto_mode": True}
 
+
 def disable_leds():
     """Turn off the LEDs"""
-    print("Disabling LEDs...")
+    logging.info("Disabling LEDs...")
     try:
         with open(LED_PWR, "w") as f:
             f.write("0")
@@ -22,12 +32,15 @@ def disable_leds():
         with open(LED_ACT, "w") as f:
             f.write("0")
         LED_STATE["activity"] = False
-    except PermissionError:
-        print("Permission denied. Ensure the add-on runs with privileged access.")
+        logging.info("LEDs disabled successfully")
+    except PermissionError as e:
+        logging.error(f"Permission denied: {str(e)}")
+    except Exception as e:
+        logging.error(f"Error disabling LEDs: {str(e)}")
 
 def enable_leds():
     """Turn LEDs back on"""
-    print("Restoring LEDs...")
+    logging.info("Restoring LEDs...")
     try:
         with open(LED_PWR, "w") as f:
             f.write("1")
@@ -35,8 +48,11 @@ def enable_leds():
         with open(LED_ACT, "w") as f:
             f.write("1")
         LED_STATE["activity"] = True
-    except PermissionError:
-        print("Permission denied. Ensure the add-on runs with privileged access.")
+        logging.info("LEDs enabled successfully")
+    except PermissionError as e:
+        logging.error(f"Permission denied: {str(e)}")
+    except Exception as e:
+        logging.error(f"Error enabling LEDs: {str(e)}")
 
 def toggle_power_led():
     """Toggle power LED"""
@@ -45,8 +61,11 @@ def toggle_power_led():
         with open(LED_PWR, "w") as f:
             f.write(new_state)
         LED_STATE["power"] = not LED_STATE["power"]
-    except PermissionError:
-        print("Permission denied when toggling power LED")
+        logging.info(f"Power LED toggled: {'OFF' if not LED_STATE['power'] else 'ON'}")
+    except PermissionError as e:
+        logging.error(f"Permission denied when toggling power LED: {str(e)}")
+    except Exception as e:
+        logging.error(f"Error toggling power LED: {str(e)}")
 
 def toggle_activity_led():
     """Toggle activity LED"""
@@ -55,15 +74,18 @@ def toggle_activity_led():
         with open(LED_ACT, "w") as f:
             f.write(new_state)
         LED_STATE["activity"] = not LED_STATE["activity"]
-    except PermissionError:
-        print("Permission denied when toggling activity LED")
+        logging.info(f"Activity LED toggled: {'OFF' if not LED_STATE['activity'] else 'ON'}")
+    except PermissionError as e:
+        logging.error(f"Permission denied when toggling activity LED: {str(e)}")
+    except Exception as e:
+        logging.error(f"Error toggling activity LED: {str(e)}")
 
 def signal_handler(sig, frame):
     """Handle shutdown signals (so LEDs turn back on when add-on stops)"""
     if LED_STATE["auto_mode"]:
         enable_leds()
-        print("Add-on stopped, LEDs restored.")
-    exit(0)
+        logging.info("Add-on stopped, LEDs restored.")
+    sys.exit(0)
 
 # Simple web UI handler
 class LEDControlHandler(BaseHTTPRequestHandler):
@@ -223,6 +245,7 @@ class LEDControlHandler(BaseHTTPRequestHandler):
             self._respond_ok()
         elif self.path == '/toggle/auto':
             LED_STATE["auto_mode"] = not LED_STATE["auto_mode"]
+            logging.info(f"Auto mode toggled: {'ON' if LED_STATE['auto_mode'] else 'OFF'}")
             self._respond_ok()
         elif self.path == '/disable_all':
             disable_leds()
@@ -240,24 +263,27 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps({"success": True, "state": LED_STATE}).encode())
 
-# Trap exit signals
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
-
-# Auto mode - disable LEDs when the add-on starts
-if LED_STATE["auto_mode"]:
-    disable_leds()
-
-# Start web server (will be available via ingress)
-def run_server():
+def main():
+    # Trap exit signals
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    # Auto mode - disable LEDs when the add-on starts
+    if LED_STATE["auto_mode"]:
+        disable_leds()
+    
+    # Start web server (will be available via ingress)
     server_address = ('', 8099)
     httpd = HTTPServer(server_address, LEDControlHandler)
-    print("Starting LED control server on port 8099")
-    httpd.serve_forever()
+    logging.info("Starting LED control server on port 8099")
+    
+    try:
+        httpd.serve_forever()
+    except Exception as e:
+        logging.error(f"Server error: {str(e)}")
+        # Make sure LEDs are restored if there's an error
+        if LED_STATE["auto_mode"]:
+            enable_leds()
 
-server_thread = threading.Thread(target=run_server, daemon=True)
-server_thread.start()
-
-# Keep running indefinitely
-while True:
-    time.sleep(1)
+if __name__ == "__main__":
+    main()
