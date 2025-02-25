@@ -12,7 +12,7 @@
   "ingress_port": 8099,
   "panel_icon": "mdi:led-on",
   "ingress_stream": true,
-  "privileged": ["SYS_ADMIN", "DAC_OVERRIDE"],
+  "privileged": ["SYS_ADMIN", "SYS_RAWIO"],
   "full_access": true,
   "options": {},
   "schema": {},
