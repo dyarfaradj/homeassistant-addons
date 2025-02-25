@@ -1,8 +1,8 @@
 {
   "name": "Raspberry Pi LED Control",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "slug": "disable_led",
-  "description": "Control Raspberry Pi onboard LEDs with buttons",
+  "description": "Control Raspberry Pi onboard LEDs with intuitive web interface",
   "url": "https://github.com/dyarfaradj/homeassistant-addons/tree/main/disable-led",
   "arch": ["aarch64", "armv7", "armhf", "amd64"],
   "startup": "application",
@@ -14,6 +14,7 @@
   "ingress_stream": true,
   "privileged": ["SYS_ADMIN", "SYS_RAWIO"],
   "full_access": true,
+  "devices": ["/dev/mem:/dev/mem:rwm"],
   "options": {},
   "schema": {},
   "stage": "stable",
