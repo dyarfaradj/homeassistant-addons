@@ -77,15 +77,24 @@ def set_led(led_type, state):
     """Set LED to specific state (True=on, False=off)"""
     if not ACTIVE_PATHS[led_type]:
         logging.warning(f"No path found for {led_type} LED, can't set state")
-        # Still update our simulated state
         LED_STATE[led_type] = state
         return
 
     try:
+        # First try direct write
         with open(ACTIVE_PATHS[led_type], "w") as f:
             f.write("1" if state else "0")
         LED_STATE[led_type] = state
         logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'}")
+    except PermissionError:
+        # Try with sudo if direct write fails
+        try:
+            cmd = ["sudo", "sh", "-c", f"echo {'1' if state else '0'} > {ACTIVE_PATHS[led_type]}"]
+            subprocess.run(cmd, check=True)
+            LED_STATE[led_type] = state
+            logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'} (using sudo)")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error setting {led_type} LED (even with sudo): {str(e)}")
     except Exception as e:
         logging.error(f"Error setting {led_type} LED: {str(e)}")
 
@@ -398,6 +407,7 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         }).encode())
 
 def main():
+    logging.info("Starting Raspberry Pi LED control add-on version 1.0.4")
     # Find LED paths
     find_led_paths()
     
