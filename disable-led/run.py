@@ -15,28 +15,61 @@ logging.basicConfig(
     stream=sys.stdout
 )
 
-# LED paths - these may vary by Pi model
-LED_PATHS = {
-    "power": [
-        "/sys/class/leds/led1/brightness",  # Standard Pi 4
-        "/sys/class/leds/PWR/brightness",   # Alternative path on some Pis
-        "/sys/class/leds/pwr/brightness"    # Another alternative
-    ],
-    "activity": [
-        "/sys/class/leds/led0/brightness",  # Standard Pi 4
-        "/sys/class/leds/ACT/brightness",   # Alternative path
-        "/sys/class/leds/act/brightness"    # Another alternative
-    ]
-}
-
-# Find valid LED paths
-ACTIVE_PATHS = {"power": None, "activity": None}
-
 # State tracking
 LED_STATE = {"power": None, "activity": None, "auto_mode": True, "has_leds": False}
 
-def find_led_paths():
-    """Detect available LED paths on this system"""
+# Systemd service naming for LED control
+SYSTEMD_LED_SERVICES = {
+    "power": "hassos-led-power.service",
+    "activity": "hassos-led-activity.service"
+}
+
+def check_led_services():
+    """Check if we can control LEDs via systemd services"""
+    for led_type, service_name in SYSTEMD_LED_SERVICES.items():
+        # Check if the systemd services exist
+        try:
+            result = subprocess.run(["systemctl", "is-active", service_name], 
+                                   capture_output=True, text=True, check=False)
+            if result.returncode == 0:
+                LED_STATE["has_leds"] = True
+                LED_STATE[led_type] = True  # If service is active, LED is on
+                logging.info(f"Found {led_type} LED service: {service_name}, current state: active")
+            else:
+                # Service exists but is inactive - LED is off
+                result = subprocess.run(["systemctl", "is-enabled", service_name], 
+                                       capture_output=True, text=True, check=False)
+                if "enabled" in result.stdout or "disabled" in result.stdout:
+                    LED_STATE["has_leds"] = True
+                    LED_STATE[led_type] = False
+                    logging.info(f"Found {led_type} LED service: {service_name}, current state: inactive")
+        except Exception as e:
+            logging.warning(f"Couldn't check {led_type} LED service: {str(e)}")
+    
+    # Fall back to old method if no services found
+    if not LED_STATE["has_leds"]:
+        fallback_to_direct_control()
+
+def fallback_to_direct_control():
+    """Fall back to direct sysfs control if systemd services are unavailable"""
+    logging.info("Falling back to direct LED control")
+    # LED paths - these may vary by Pi model
+    LED_PATHS = {
+        "power": [
+            "/sys/class/leds/led1/brightness",  # Standard Pi 4
+            "/sys/class/leds/PWR/brightness",   # Alternative path on some Pis
+            "/sys/class/leds/pwr/brightness"    # Another alternative
+        ],
+        "activity": [
+            "/sys/class/leds/led0/brightness",  # Standard Pi 4
+            "/sys/class/leds/ACT/brightness",   # Alternative path
+            "/sys/class/leds/act/brightness"    # Another alternative
+        ]
+    }
+    
+    # Find valid LED paths
+    ACTIVE_PATHS = {"power": None, "activity": None}
+    
     for led_type, paths in LED_PATHS.items():
         for path in paths:
             if os.path.exists(path):
@@ -53,43 +86,98 @@ def find_led_paths():
                 break
     
     if not LED_STATE["has_leds"]:
-        logging.warning("No LED paths found. This might not be a Raspberry Pi or we lack permissions.")
+        logging.warning("No LED controls found. This might not be a Raspberry Pi or we lack permissions.")
         logging.info("Will continue in simulation mode.")
 
 def toggle_led(led_type):
     """Toggle an LED state"""
-    if not ACTIVE_PATHS[led_type]:
-        logging.warning(f"No path found for {led_type} LED, can't toggle")
-        # Still update our simulated state
+    if not LED_STATE["has_leds"]:
+        logging.warning(f"No control method found for {led_type} LED, using simulation")
+        # Update simulated state
         LED_STATE[led_type] = not LED_STATE[led_type]
         return
-
+    
+    # Try to use systemd services first
+    service_name = SYSTEMD_LED_SERVICES.get(led_type)
+    if service_name:
+        action = "stop" if LED_STATE[led_type] else "start"
+        try:
+            subprocess.run(["sudo", "systemctl", action, service_name], check=True)
+            LED_STATE[led_type] = not LED_STATE[led_type]
+            logging.info(f"{led_type.capitalize()} LED toggled: {'OFF' if not LED_STATE[led_type] else 'ON'} via systemd")
+            return
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to control {led_type} LED via systemd: {str(e)}")
+    
+    # Fall back to direct control
     try:
-        new_state = "0" if LED_STATE[led_type] else "1"
-        with open(ACTIVE_PATHS[led_type], "w") as f:
-            f.write(new_state)
-        LED_STATE[led_type] = not LED_STATE[led_type]
-        logging.info(f"{led_type.capitalize()} LED toggled: {'OFF' if not LED_STATE[led_type] else 'ON'}")
+        path = find_direct_led_path(led_type)
+        if path:
+            new_state = "0" if LED_STATE[led_type] else "1"
+            with open(path, "w") as f:
+                f.write(new_state)
+            LED_STATE[led_type] = not LED_STATE[led_type]
+            logging.info(f"{led_type.capitalize()} LED toggled via direct control: {'OFF' if not LED_STATE[led_type] else 'ON'}")
+        else:
+            LED_STATE[led_type] = not LED_STATE[led_type]  # Just toggle the state in simulation mode
     except Exception as e:
         logging.error(f"Error toggling {led_type} LED: {str(e)}")
 
+def find_direct_led_path(led_type):
+    """Find the direct path for a specific LED type"""
+    # LED paths - these may vary by Pi model
+    LED_PATHS = {
+        "power": [
+            "/sys/class/leds/led1/brightness",
+            "/sys/class/leds/PWR/brightness",
+            "/sys/class/leds/pwr/brightness"
+        ],
+        "activity": [
+            "/sys/class/leds/led0/brightness",
+            "/sys/class/leds/ACT/brightness",
+            "/sys/class/leds/act/brightness"
+        ]
+    }
+    
+    for path in LED_PATHS.get(led_type, []):
+        if os.path.exists(path):
+            return path
+    return None
+
 def set_led(led_type, state):
     """Set LED to specific state (True=on, False=off)"""
-    if not ACTIVE_PATHS[led_type]:
-        logging.warning(f"No path found for {led_type} LED, can't set state")
+    if not LED_STATE["has_leds"]:
+        logging.warning(f"No control method found for {led_type} LED, using simulation")
         LED_STATE[led_type] = state
         return
-
+    
+    # Try systemd first
+    service_name = SYSTEMD_LED_SERVICES.get(led_type)
+    if service_name:
+        action = "start" if state else "stop"
+        try:
+            subprocess.run(["sudo", "systemctl", action, service_name], check=True)
+            LED_STATE[led_type] = state
+            logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'} via systemd")
+            return
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to control {led_type} LED via systemd: {str(e)}")
+    
+    # Fall back to direct control
+    path = find_direct_led_path(led_type)
+    if not path:
+        LED_STATE[led_type] = state  # Update state for simulation
+        return
+        
     try:
-        # First try direct write
-        with open(ACTIVE_PATHS[led_type], "w") as f:
+        with open(path, "w") as f:
             f.write("1" if state else "0")
         LED_STATE[led_type] = state
-        logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'}")
+        logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'} via direct control")
     except PermissionError:
         # Try with sudo if direct write fails
         try:
-            cmd = ["sudo", "sh", "-c", f"echo {'1' if state else '0'} > {ACTIVE_PATHS[led_type]}"]
+            cmd = ["sudo", "sh", "-c", f"echo {'1' if state else '0'} > {path}"]
             subprocess.run(cmd, check=True)
             LED_STATE[led_type] = state
             logging.info(f"{led_type.capitalize()} LED set to: {'ON' if state else 'OFF'} (using sudo)")
@@ -407,9 +495,9 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         }).encode())
 
 def main():
-    logging.info("Starting Raspberry Pi LED control add-on version 1.0.9")
-    # Find LED paths
-    find_led_paths()
+    logging.info("Starting Raspberry Pi LED control add-on version 1.1.0")
+    # Find LED control methods
+    check_led_services()
     
     # Trap exit signals
     signal.signal(signal.SIGTERM, signal_handler)
