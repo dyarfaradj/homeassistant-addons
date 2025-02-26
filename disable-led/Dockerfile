@@ -19,8 +19,5 @@ RUN chmod a+x /run.sh /run.py
 # Ensure the container has the necessary permissions
 RUN echo "root ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# Reload udev rules
-RUN udevadm control --reload-rules && udevadm trigger
-
 WORKDIR /
 CMD [ "/run.sh" ]

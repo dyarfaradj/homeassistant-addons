@@ -495,7 +495,7 @@ class LEDControlHandler(BaseHTTPRequestHandler):
         }).encode())
 
 def main():
-    logging.info("Starting Raspberry Pi LED control add-on version 1.1.0")
+    logging.info("Starting Raspberry Pi LED control add-on version 1.1.1")
     # Find LED control methods
     check_led_services()
     

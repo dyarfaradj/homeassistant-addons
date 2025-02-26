@@ -1,6 +1,6 @@
 {
   "name": "Raspberry Pi LED Control",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "slug": "disable_led",
   "description": "Control Raspberry Pi onboard LEDs with intuitive web interface",
   "url": "https://github.com/dyarfaradj/homeassistant-addons/tree/main/disable-led",
