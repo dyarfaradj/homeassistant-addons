@@ -27,4 +27,3 @@ options:
 schema:
   power_led: list(on|off|heartbeat|mmc|timer)
   activity_led: list(on|off|heartbeat|mmc|timer)
-image: "ghcr.io/yourusername/{arch}-disable-led"
