@@ -3,7 +3,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Install required packages
-RUN apk add --no-cache python3 util-linux shadow sudo
+RUN apk add --no-cache python3 sudo
 
 # Create directories 
 RUN mkdir -p /templates
@@ -11,7 +11,6 @@ RUN mkdir -p /templates
 # Copy files
 COPY run.py /
 COPY run.sh /
-COPY 99-led-permissions.rules /etc/udev/rules.d/
 
 # Make scripts executable
 RUN chmod a+x /run.sh /run.py

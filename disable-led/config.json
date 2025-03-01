@@ -1,8 +1,8 @@
 {
   "name": "Raspberry Pi LED Control",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "slug": "disable_led",
-  "description": "Control Raspberry Pi onboard LEDs with intuitive web interface",
+  "description": "Control Raspberry Pi onboard LEDs using systemd services",
   "url": "https://github.com/dyarfaradj/homeassistant-addons/tree/main/disable-led",
   "arch": ["aarch64", "armv7", "armhf", "amd64"],
   "startup": "application",
@@ -12,20 +12,11 @@
   "ingress_port": 8099,
   "panel_icon": "mdi:led-on",
   "ingress_stream": true,
-  "privileged": ["SYS_ADMIN", "SYS_RAWIO"],
-  "full_access": true,
-  "devices": [
-    "/sys/class/leds/led0",
-    "/sys/class/leds/led1",
-    "/sys/class/leds/ACT",
-    "/sys/class/leds/PWR",
-    "/sys/class/leds/act",
-    "/sys/class/leds/pwr"
-  ],
+  "privileged": ["SYS_ADMIN"],
+  "full_access": false,
   "options": {},
   "schema": {},
   "stage": "stable",
   "hassio_api": true,
-  "hassio_role": "default",
-  "map": ["share:rw", "ssl"]
+  "hassio_role": "default"
 }
