@@ -1,4 +1,3 @@
-# Dockerfile for the add-on
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
@@ -10,7 +9,7 @@ RUN apk add --no-cache \
 # Copy root filesystem
 COPY rootfs /
 
-# Set permissions
+# Ensure all scripts have execute permissions
 RUN chmod a+x /usr/bin/led-control.sh
 RUN chmod a+x /run.sh
 
@@ -23,4 +22,5 @@ LABEL \
     io.hass.version=${BUILD_VERSION} \
     maintainer="Your Name <your.email@example.com>"
 
-ENTRYPOINT ["/run.sh"]
+# Set default command
+CMD [ "/run.sh" ]
