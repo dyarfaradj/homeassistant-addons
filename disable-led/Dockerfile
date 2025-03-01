@@ -1,22 +1,26 @@
-# Use Home Assistant Base Image
+# Dockerfile for the add-on
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install required packages
-RUN apk add --no-cache python3 sudo
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    jq
 
-# Create directories 
-RUN mkdir -p /templates
+# Copy root filesystem
+COPY rootfs /
 
-# Copy files
-COPY run.py /
-COPY run.sh /
+# Set permissions
+RUN chmod a+x /usr/bin/led-control.sh
+RUN chmod a+x /run.sh
 
-# Make scripts executable
-RUN chmod a+x /run.sh /run.py
+# Labels
+LABEL \
+    io.hass.name="Raspberry Pi LED Control" \
+    io.hass.description="Control the LEDs on your Raspberry Pi" \
+    io.hass.arch="${BUILD_ARCH}" \
+    io.hass.type="addon" \
+    io.hass.version=${BUILD_VERSION} \
+    maintainer="Your Name <your.email@example.com>"
 
-# Ensure the container has the necessary permissions
-RUN echo "root ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-WORKDIR /
-CMD [ "/run.sh" ]
+ENTRYPOINT ["/run.sh"]

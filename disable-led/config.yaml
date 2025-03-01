@@ -1,0 +1,30 @@
+# Home Assistant Add-on: Raspberry Pi LED Control
+# Repository structure for the add-on
+
+# addon/config.yaml
+name: "Raspberry Pi LED Control"
+version: "1.0.0"
+slug: "disable_led"
+description: "Control the LEDs on your Raspberry Pi (power and activity LEDs)"
+url: "https://github.com/yourusername/hassio-addons/tree/main/disable_led"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+startup: application
+boot: auto
+init: false
+host_network: false
+privileged:
+  - SYS_RAWIO
+devices:
+  - /dev/mem
+map:
+  - config:rw
+options:
+  power_led: "on"
+  activity_led: "on"
+schema:
+  power_led: list(on|off|heartbeat|mmc|timer)
+  activity_led: list(on|off|heartbeat|mmc|timer)
+image: "ghcr.io/yourusername/{arch}-disable-led"

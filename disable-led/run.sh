@@ -1,15 +1,22 @@
 #!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Add-on: Raspberry Pi LED Control
+# Runs the LED control script
+# ==============================================================================
+set -e
 
-bashio::log.info "Setting up LED permissions..."
+CONFIG_PATH=/data/options.json
 
-# Try to remount /sys as read-write
-sudo mount -o remount,rw /sys || bashio::log.warning "Could not remount /sys as read-write"
+# Get settings from configuration
+POWER_LED=$(jq --raw-output ".power_led" $CONFIG_PATH)
+ACTIVITY_LED=$(jq --raw-output ".activity_led" $CONFIG_PATH)
 
-# Create gpio group if it doesn't exist and add our user
-if ! getent group gpio >/dev/null; then
-    sudo groupadd gpio
-fi
-sudo usermod -a -G gpio $(whoami)
+bashio::log.info "Starting Raspberry Pi LED Control add-on"
+bashio::log.info "Power LED set to: ${POWER_LED}"
+bashio::log.info "Activity LED set to: ${ACTIVITY_LED}"
 
-# Start the Python script
-sudo python3 /run.py
+# Run the LED control script with the provided settings
+/usr/bin/led-control.sh "${POWER_LED}" "${ACTIVITY_LED}"
+
+# Keep the add-on running
+tail -f /dev/null
