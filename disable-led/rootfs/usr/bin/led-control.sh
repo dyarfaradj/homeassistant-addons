@@ -44,7 +44,7 @@ else
     ACTIVITY_LED_PATH=""
 fi
 
-# Function to control LED with verbose output
+# Function to control LED with permission verification
 control_led() {
     LED_PATH=$1
     LED_STATE=$2
@@ -56,50 +56,70 @@ control_led() {
     
     echo "Controlling LED at $LED_PATH to state: $LED_STATE"
     
-    # Check if LED path is writable
-    if [ ! -w "$LED_PATH/trigger" ]; then
-        echo "ERROR: Cannot write to $LED_PATH/trigger - check permissions"
+    # Check if LED path exists
+    if [ ! -d "$LED_PATH" ]; then
+        echo "ERROR: LED path $LED_PATH does not exist"
         return 1
     fi
     
-    # Save original trigger to restore if needed
-    if [ ! -f "/tmp/original_$(basename $LED_PATH)_trigger" ]; then
-        echo "Saving original trigger state"
-        cat "$LED_PATH/trigger" | grep -o "\[[a-z0-9]*\]" | tr -d "[]" > "/tmp/original_$(basename $LED_PATH)_trigger" || echo "Failed to save original trigger"
-    fi
+    # Display permissions for debugging
+    echo "Permissions on LED files:"
+    ls -la $LED_PATH/ || echo "Failed to list LED files"
     
-    echo "Setting LED to $LED_STATE mode"
+    # Try using a direct approach with privileged access
+    echo "Trying to control LED..."
     case $LED_STATE in
         "off")
-            echo "Setting to OFF - writing 'none' to trigger and '0' to brightness"
-            echo "none" > "$LED_PATH/trigger" || echo "Failed to write to trigger"
-            echo "0" > "$LED_PATH/brightness" || echo "Failed to write to brightness"
+            echo "Setting to OFF"
+            {
+                # Try different methods to set the LED
+                echo none > $LED_PATH/trigger 2>/dev/null || true
+                echo 0 > $LED_PATH/brightness 2>/dev/null || true
+                
+                # Alternative approach using sysfs files directly
+                if [ -e "/sys/class/leds/$(basename $LED_PATH)/trigger" ]; then
+                    echo none > /sys/class/leds/$(basename $LED_PATH)/trigger 2>/dev/null || true
+                    echo 0 > /sys/class/leds/$(basename $LED_PATH)/brightness 2>/dev/null || true
+                fi
+            }
             ;;
         "on")
-            echo "Setting to ON - writing 'none' to trigger and '1' to brightness"
-            echo "none" > "$LED_PATH/trigger" || echo "Failed to write to trigger"
-            echo "1" > "$LED_PATH/brightness" || echo "Failed to write to brightness"
+            echo "Setting to ON"
+            {
+                echo none > $LED_PATH/trigger 2>/dev/null || true
+                echo 1 > $LED_PATH/brightness 2>/dev/null || true
+                
+                # Alternative approach
+                if [ -e "/sys/class/leds/$(basename $LED_PATH)/trigger" ]; then
+                    echo none > /sys/class/leds/$(basename $LED_PATH)/trigger 2>/dev/null || true
+                    echo 1 > /sys/class/leds/$(basename $LED_PATH)/brightness 2>/dev/null || true
+                fi
+            }
             ;;
         "heartbeat")
             echo "Setting to HEARTBEAT mode"
-            echo "heartbeat" > "$LED_PATH/trigger" || echo "Failed to write to trigger"
+            echo heartbeat > $LED_PATH/trigger 2>/dev/null || echo "Failed - trying alternative approach" 
+            [ $? -ne 0 ] && echo heartbeat > /sys/class/leds/$(basename $LED_PATH)/trigger 2>/dev/null || true
             ;;
         "mmc")
             echo "Setting to MMC mode"
-            echo "mmc0" > "$LED_PATH/trigger" || echo "Failed to write to trigger"
+            echo mmc0 > $LED_PATH/trigger 2>/dev/null || echo "Failed - trying alternative approach"
+            [ $? -ne 0 ] && echo mmc0 > /sys/class/leds/$(basename $LED_PATH)/trigger 2>/dev/null || true
             ;;
         "timer")
             echo "Setting to TIMER mode"
-            echo "timer" > "$LED_PATH/trigger" || echo "Failed to write to trigger"
+            echo timer > $LED_PATH/trigger 2>/dev/null || echo "Failed - trying alternative approach"
+            [ $? -ne 0 ] && echo timer > /sys/class/leds/$(basename $LED_PATH)/trigger 2>/dev/null || true
             ;;
         *)
             echo "Invalid LED state: $LED_STATE"
             ;;
     esac
     
-    echo "Current LED status:"
-    echo "- Trigger: $(cat $LED_PATH/trigger)"
-    echo "- Brightness: $(cat $LED_PATH/brightness)"
+    # Check the current state
+    echo "Current LED status (if readable):"
+    cat $LED_PATH/trigger 2>/dev/null || echo "Can't read trigger"
+    cat $LED_PATH/brightness 2>/dev/null || echo "Can't read brightness"
 }
 
 # Control LEDs
@@ -113,4 +133,4 @@ if [ -n "$ACTIVITY_LED_PATH" ]; then
     control_led "$ACTIVITY_LED_PATH" "$ACTIVITY_LED"
 fi
 
-echo "LED settings applied successfully"
+echo "LED control attempt completed"
