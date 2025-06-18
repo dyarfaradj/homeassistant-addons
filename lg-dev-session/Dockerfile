@@ -5,7 +5,8 @@ FROM $BUILD_FROM
 RUN apk add --no-cache \
     python3 \
     py3-pip \
-    jq
+    jq \
+    bash
 
 # Install Python packages
 RUN pip3 install --no-cache-dir \
