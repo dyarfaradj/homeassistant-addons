@@ -1,0 +1,2 @@
+DOMAIN = "lg_dev_session"
+DEFAULT_INTERVAL_HOURS = 48
