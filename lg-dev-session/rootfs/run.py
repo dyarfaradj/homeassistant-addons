@@ -45,10 +45,31 @@ def renew_session(url):
         response = requests.get(url, timeout=30)
         response.raise_for_status()
         
-        logger.info(f"Session renewal successful! Status: {response.status_code}")
-        logger.debug(f"Response content: {response.text[:200]}...")
-        
-        return True
+        # Parse JSON response
+        try:
+            json_response = response.json()
+            logger.info(f"API Response: {json_response}")
+            
+            # Check if the response indicates success
+            result = json_response.get('result', '').lower()
+            error_code = json_response.get('errorCode', '')
+            error_msg = json_response.get('errorMsg', '')
+            
+            if result == 'success' and error_code == '200':
+                logger.info("✅ Session renewal successful!")
+                logger.info(f"Response details - Result: {result}, Code: {error_code}, Message: {error_msg}")
+                return True
+            else:
+                logger.error(f"❌ Session renewal failed according to API response")
+                logger.error(f"Result: {result}, Error Code: {error_code}, Error Message: {error_msg}")
+                return False
+                
+        except (ValueError, KeyError) as json_error:
+            # If response is not JSON or missing expected fields, log raw response
+            logger.warning(f"Could not parse JSON response: {json_error}")
+            logger.info(f"Raw response: {response.text}")
+            logger.info(f"HTTP Status: {response.status_code} - assuming success")
+            return True
         
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to renew session: {e}")

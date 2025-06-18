@@ -1,6 +1,6 @@
 # Home Assistant Add-on: LG Dev Session Auto Renew
 name: "LG Dev Session Auto Renew"
-version: "1.0.1"
+version: "1.0.2"
 slug: "lg_dev_session"
 description: "Automatically calls an LG Developer URL to renew Developer Mode sessions on your LG webOS TV"
 url: "https://github.com/dyarfaradj/homeassistant-addons/tree/main/lg-dev-session"
