@@ -8,16 +8,14 @@ arch:
   - armhf
   - armv7
   - aarch64
-  - amd64
-  - i386
 startup: application
 boot: auto
 init: false
 map:
   - config:rw
 options:
-  url: ""
+  url: "https://developer.lge.com/secure/ResetDevModeSession.dev?sessionToken=YOUR_TOKEN_HERE"
   interval_hours: 48
 schema:
-  url: "str"
-  interval_hours: "int(1,168)"
+  url: str
+  interval_hours: int(1,168)
