@@ -13,9 +13,11 @@ arch:
 startup: application
 boot: auto
 init: false
+map:
+  - config:rw
 options:
   url: ""
   interval_hours: 48
 schema:
-  url: str
-  interval_hours: int(1,168)
+  url: "str"
+  interval_hours: "int(1,168)"
