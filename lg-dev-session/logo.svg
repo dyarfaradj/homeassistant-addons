@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
+  <!-- Background -->
+  <rect width="200" height="100" fill="#8B0000" rx="10"/>
+  
+  <!-- LG Text -->
+  <text x="30" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">LG</text>
+  
+  <!-- Dev Session Text -->
+  <text x="30" y="65" font-family="Arial, sans-serif" font-size="12" fill="white">Dev Session</text>
+  
+  <!-- Auto Renew Text -->
+  <text x="30" y="80" font-family="Arial, sans-serif" font-size="10" fill="white" opacity="0.8">Auto Renew</text>
+  
+  <!-- Refresh Symbol -->
+  <g transform="translate(150, 50)">
+    <circle cx="0" cy="0" r="25" fill="none" stroke="white" stroke-width="2" opacity="0.3"/>
+    <path d="M -15,-8 A 15,15 0 1,1 15,-8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <polygon points="12,-12 18,-8 12,-4" fill="white"/>
+    <polygon points="-12,-4 -18,-8 -12,-12" fill="white"/>
+  </g>
+</svg>

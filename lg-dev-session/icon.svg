@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="#8B0000" stroke="#000" stroke-width="2"/>
+  
+  <!-- LG Letters -->
+  <text x="50" y="35" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">LG</text>
+  
+  <!-- Refresh/Renew symbol -->
+  <g transform="translate(50, 60)">
+    <path d="M -10,-5 A 8,8 0 1,1 10,-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <polygon points="8,-8 12,-5 8,-2" fill="white"/>
+    <polygon points="-8,-2 -12,-5 -8,-8" fill="white"/>
+  </g>
+  
+  <!-- Small TV screen indicator -->
+  <rect x="35" y="70" width="30" height="20" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+  <rect x="37" y="72" width="26" height="16" fill="white" opacity="0.3"/>
+</svg>
