@@ -57,7 +57,11 @@ def renew_session(url):
             
             if result == 'success' and error_code == '200':
                 logger.info("✅ Session renewal successful!")
-                logger.info(f"Response details - Result: {result}, Code: {error_code}, Message: {error_msg}")
+                # Only log the message if it's meaningful (not just "GNL" or similar codes)
+                if error_msg and error_msg not in ['GNL', 'OK', '']:
+                    logger.info(f"Response message: {error_msg}")
+                else:
+                    logger.info("LG Developer session has been successfully renewed")
                 return True
             else:
                 logger.error(f"❌ Session renewal failed according to API response")
@@ -96,12 +100,27 @@ def main():
         logger.error("URL must start with http:// or https://")
         sys.exit(1)
     
+    # Create a wrapper function for scheduled renewals with better logging
+    def scheduled_renewal():
+        logger.info("🔄 Scheduled session renewal starting...")
+        success = renew_session(url)
+        if success:
+            logger.info("📅 Scheduled session renewal completed successfully")
+        else:
+            logger.error("📅 Scheduled session renewal failed")
+        return success
+    
     # Schedule the renewal job
-    schedule.every(interval_hours).hours.do(renew_session, url)
+    schedule.every(interval_hours).hours.do(scheduled_renewal)
     
     # Run initial renewal
     logger.info("Performing initial session renewal...")
-    renew_session(url)
+    initial_success = renew_session(url)
+    
+    if initial_success:
+        logger.info("🎉 Initial session renewal completed successfully")
+    else:
+        logger.warning("⚠️ Initial session renewal failed - will retry according to schedule")
     
     # Main loop
     logger.info(f"Session renewal scheduled every {interval_hours} hours")
