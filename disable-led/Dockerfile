@@ -20,7 +20,7 @@ LABEL \
     io.hass.arch="${BUILD_ARCH}" \
     io.hass.type="addon" \
     io.hass.version=${BUILD_VERSION} \
-    maintainer="dyarfaradj <exampler@example.com>"
+    maintainer="Dyar Faradj <exampler@example.com>"
 
 # Set default command
 CMD [ "/run.sh" ]
