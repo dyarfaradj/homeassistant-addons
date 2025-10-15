@@ -5,9 +5,11 @@ slug: "lg_dev_session"
 description: "Automatically calls an LG Developer URL to renew Developer Mode sessions on your LG webOS TV"
 url: "https://github.com/dyarfaradj/homeassistant-addons/tree/main/lg-dev-session"
 arch:
+  - aarch64
+  - amd64
   - armhf
   - armv7
-  - aarch64
+  - i386
 startup: application
 boot: auto
 init: false
